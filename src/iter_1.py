@@ -23,6 +23,7 @@ if not DATA_GENERATED:
     for seed in SEEDS:
         inputs = input_gen(seed).astype(np.float32)
         labels = label_gen(seed).astype(np.float32)
+        print(f"{seed} {inputs.shape} {labels.shape}")
 
         cache_samples(inputs, labels)
 
