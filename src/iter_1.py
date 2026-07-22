@@ -5,9 +5,8 @@ from sklearn.metrics import mean_absolute_error, r2_score
 
 from simulations.hbt import (EFF_1S, INPUT_N, input_gen, label_gen, seed_env,
                              seed_gen)
-from utils.cache_utils import (TEST_DB, TRAIN_DB, VALID_DB, cache_samples,
-                               create_cache, hit_cache)
-from utils.data_utils import create_loader, train_validation_test_split
+from utils.cache_utils import cache_samples, create_cache, hit_cache
+from utils.data_utils import create_loaders
 from utils.plot_utils import plot_results
 
 DATA_GENERATED = False
@@ -16,35 +15,16 @@ WEIGHTS_PATH = "weights/iter_1_weights.pth"
 
 seed_env(10)
 SEEDS = seed_gen(121)
-TOTAL = len(SEEDS) * len(EFF_1S)
+TOTAL = len(EFF_1S) * len(SEEDS)
 
 if not DATA_GENERATED:
-    create_cache(TRAIN_DB)
-    create_cache(TEST_DB)
-    create_cache(VALID_DB)
+    create_cache()
 
     for seed in SEEDS:
         inputs = input_gen(seed).astype(np.float32)
         labels = label_gen(seed).astype(np.float32)
 
-        X_train, X_valid, X_test, y_train, y_valid, y_test = (
-            train_validation_test_split(inputs, labels, 0.15, 0.15)
-        )
-
-        print(seed)
-        print(
-            f"X train: {(X_train.shape, X_train.dtype)}, X valid shape: {(X_valid.shape, X_valid.dtype)}, X test shape: {(X_test.shape, X_test.dtype)}"
-        )
-        print(
-            f"y train: {(y_train.shape, y_train.dtype)}, y valid shape: {(y_valid.shape, y_valid.dtype)}, y test shape: {(y_test.shape, y_test.dtype)}\n"
-        )
-
-        cache_samples(TRAIN_DB, seed, X_train, y_train)
-        cache_samples(VALID_DB, seed, X_valid, y_valid)
-        cache_samples(TEST_DB, seed, X_test, y_test)
-
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-print(f"{device}\n")
+        cache_samples(inputs, labels)
 
 model = nn.Sequential()
 model.add_module("conv1d_1", nn.Conv1d(1, 64, 25, 1, 12))
@@ -64,9 +44,14 @@ model.add_module("fc_3", nn.Linear(1_028, 64))
 model.add_module("relu_4", nn.ReLU())
 model.add_module("fc_3", nn.Linear(64, 1))
 model.add_module("softplus", nn.Softplus())
-model.to(device)
+
+inputs, labels = hit_cache(TOTAL, INPUT_N)
+train_loader, valid_loader, X_test, y_test = create_loaders(inputs, labels)
 
 if not TRAINED:
+    device = torch.device("cuda")
+    model.to(device)
+
     loss_fn = nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
     epochs = 30
@@ -82,26 +67,22 @@ if not TRAINED:
         train_actual = []
         train_pred = []
         model.train()
-        for seed in SEEDS:
-            inputs, labels = hit_cache(TRAIN_DB, seed, len(EFF_1S), INPUT_N)
-            train_loader = create_loader(inputs, labels)
+        for X_batch, y_batch in train_loader:
+            X_batch = X_batch.to(device)
+            y_batch = y_batch.to(device)
 
-            for X_batch, y_batch in train_loader:
-                X_batch = X_batch.to(device)
-                y_batch = y_batch.to(device)
+            pred = model(X_batch).squeeze(-1)
+            loss = loss_fn(pred, y_batch)
 
-                pred = model(X_batch).squeeze(-1)
-                loss = loss_fn(pred, y_batch)
+            loss.backward()
+            optimizer.step()
+            optimizer.zero_grad()
 
-                loss.backward()
-                optimizer.step()
-                optimizer.zero_grad()
+            train_loss_graph[epoch] += loss.item() * y_batch.size(0)
+            train_actual.append(y_batch.detach().cpu().numpy())
+            train_pred.append(pred.detach().cpu().numpy())
 
-                train_loss_graph[epoch] += loss.item() * y_batch.size(0)
-                train_actual.append(y_batch.detach().cpu().numpy())
-                train_pred.append(pred.detach().cpu().numpy())
-
-        train_loss_graph[epoch] /= TOTAL
+        train_loss_graph[epoch] /= len(train_loader.dataset)  # type: ignore
         train_actual = np.concat(train_actual)
         train_pred = np.concat(train_pred)
         train_mae_graph[epoch] = mean_absolute_error(train_actual, train_pred)
@@ -116,22 +97,18 @@ if not TRAINED:
         valid_pred = []
         model.eval()
         with torch.no_grad():
-            for seed in SEEDS:
-                inputs, labels = hit_cache(VALID_DB, seed, len(EFF_1S), INPUT_N)
-                valid_loader = create_loader(inputs, labels)
+            for X_batch, y_batch in valid_loader:
+                X_batch = X_batch.to(device)
+                y_batch = y_batch.to(device)
 
-                for X_batch, y_batch in valid_loader:
-                    X_batch = X_batch.to(device)
-                    y_batch = y_batch.to(device)
+                pred = model(X_batch).squeeze(-1)
+                loss = loss_fn(pred, y_batch)
 
-                    pred = model(X_batch).squeeze(-1)
-                    loss = loss_fn(pred, y_batch)
+                valid_loss_graph[epoch] += loss.item() * y_batch.size(0)
+                valid_actual.append(y_batch.detach().cpu().numpy())
+                valid_pred.append(pred.detach().cpu().numpy())
 
-                    valid_loss_graph[epoch] += loss.item() * y_batch.size(0)
-                    valid_actual.append(y_batch.detach().cpu().numpy())
-                    valid_pred.append(pred.detach().cpu().numpy())
-
-            valid_loss_graph[epoch] /= TOTAL
+            valid_loss_graph[epoch] /= len(valid_loader.dataset)  # type: ignore
             valid_actual = np.concat(valid_actual)
             valid_pred = np.concat(valid_pred)
             valid_mae_graph[epoch] = mean_absolute_error(valid_actual, valid_pred)
@@ -139,7 +116,7 @@ if not TRAINED:
 
             print(f"validation loss: {valid_loss_graph[epoch]}")
             print(f"validation mae: {valid_mae_graph[epoch]}")
-            print(f"validation r2: {valid_r2_graph[epoch]}")
+            print(f"validation r2: {valid_r2_graph[epoch]}\n")
 
     torch.save(model.state_dict(), WEIGHTS_PATH)
 
@@ -170,3 +147,12 @@ if not TRAINED:
         "r2 score",
         "iter_1_r2",
     )
+else:
+    model.load_state_dict(torch.load(WEIGHTS_PATH, weights_only=True))
+    model.eval()
+    with torch.no_grad():
+        pred = model(X_test).squeeze(-1).numpy()
+        actual = y_test.numpy()
+
+        print(f"test mae: {mean_absolute_error(actual, pred)}")
+        print(f"test r2: {r2_score(actual, pred)}")

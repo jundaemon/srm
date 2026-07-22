@@ -35,10 +35,28 @@ def train_validation_test_split(
     return X_train, X_valid, X_test, y_train, y_valid, y_test
 
 
-def create_loader(X: NDArray[np.float32], y: NDArray[np.float32]) -> DataLoader:
-    X_tensor = torch.from_numpy(X)
-    X_tensor = X_tensor.unsqueeze(1)
+def create_loaders(
+    X: NDArray[np.float32], y: NDArray[np.float32]
+) -> tuple[DataLoader, DataLoader, Tensor, Tensor]:
+    X_train, X_valid, X_test, y_train, y_valid, y_test = train_validation_test_split(
+        X, y, 0.15, 0.15
+    )
+    X_train = torch.from_numpy(X_train)
+    X_train = X_train.unsqueeze(1)
 
-    y_tensor = torch.from_numpy(y)
+    X_valid = torch.from_numpy(X_valid)
+    X_valid = X_valid.unsqueeze(1)
 
-    return DataLoader(TensorDataset(X_tensor, y_tensor), 64, True)
+    X_test = torch.from_numpy(X_test)
+    X_test = X_test.unsqueeze(1)
+
+    y_train = torch.from_numpy(y_train)
+    y_valid = torch.from_numpy(y_valid)
+    y_test = torch.from_numpy(y_test)
+
+    return (
+        DataLoader(TensorDataset(X_train, y_train), 64, True),
+        DataLoader(TensorDataset(X_valid, y_valid), 64, True),
+        X_test,
+        y_test,
+    )
