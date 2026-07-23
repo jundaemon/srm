@@ -24,7 +24,7 @@ def cache_samples(X: NDArray[np.float32], y: NDArray[np.float32]) -> None:
     for input, label in zip(X, y):
         values.append((input.tobytes(), label))
 
-    cursor.executemany(f"INSERT INTO samples (input, label) VALUES (?, ?)", values)
+    cursor.executemany("INSERT INTO samples (input, label) VALUES (?, ?)", values)
     conn.commit()
 
     conn.close()
@@ -36,9 +36,9 @@ def hit_cache(rows: int, cols: int) -> tuple[NDArray[np.float32], NDArray[np.flo
 
     inputs = np.empty((rows, cols), dtype=np.float32)
     labels = np.empty(rows, dtype=np.float32)
-    for i, row in enumerate(cursor.execute(f"SELECT * FROM samples;")):
+    for i, row in enumerate(cursor.execute("SELECT * FROM samples;")):
         inputs[i] = np.frombuffer(row[0], dtype=np.float32)
-        labels[i] = row[1]
+        labels[i] = np.frombuffer(row[1], dtype=np.float32)[0]
 
     conn.close()
     return inputs, labels

@@ -11,3 +11,9 @@ wheels/
 
 # Database files
 *.db
+
+# Weights
+weights/
+
+# Assets
+assets/

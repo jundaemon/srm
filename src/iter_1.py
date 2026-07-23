@@ -3,14 +3,14 @@ import torch
 import torch.nn as nn
 from sklearn.metrics import mean_absolute_error, r2_score
 
-from simulations.hbt import (EFF_1S, INPUT_N, input_gen, label_gen, seed_env,
+from simulations.hbt import (EFF_1S, BINS, input_gen, label_gen, seed_env,
                              seed_gen)
 from utils.cache_utils import cache_samples, create_cache, hit_cache
 from utils.data_utils import create_loaders
 from utils.plot_utils import plot_results
 
-DATA_GENERATED = False
-TRAINED = False
+DATA_GENERATED = True
+TRAINED = True
 WEIGHTS_PATH = "weights/iter_1_weights.pth"
 
 seed_env(10)
@@ -43,10 +43,10 @@ model.add_module("relu_4", nn.ReLU())
 model.add_module("dropout_2", nn.Dropout(0.25))
 model.add_module("fc_3", nn.Linear(1_028, 64))
 model.add_module("relu_4", nn.ReLU())
-model.add_module("fc_3", nn.Linear(64, 1))
+model.add_module("fc_4", nn.Linear(64, 1))
 model.add_module("softplus", nn.Softplus())
 
-inputs, labels = hit_cache(TOTAL, INPUT_N)
+inputs, labels = hit_cache(TOTAL, BINS)
 train_loader, valid_loader, X_test, y_test = create_loaders(inputs, labels)
 
 if not TRAINED:
