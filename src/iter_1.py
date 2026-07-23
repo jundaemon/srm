@@ -1,17 +1,20 @@
+import os
+
 import numpy as np
 import torch
 import torch.nn as nn
 from sklearn.metrics import mean_absolute_error, r2_score
 
-from simulations.hbt import (EFF_1S, BINS, input_gen, label_gen, seed_env,
+from simulations.hbt import (BINS, EFF_1S, input_gen, label_gen, seed_env,
                              seed_gen)
 from utils.cache_utils import cache_samples, create_cache, hit_cache
 from utils.data_utils import create_loaders
 from utils.plot_utils import plot_results
 
 DATA_GENERATED = True
-TRAINED = True
-WEIGHTS_PATH = "weights/iter_1_weights.pth"
+TRAINED = False
+WEIGHTS_DIR = "weights"
+ASSETS_DIR = "assets"
 
 seed_env(10)
 SEEDS = seed_gen(121)
@@ -119,37 +122,30 @@ if not TRAINED:
             print(f"validation mae: {valid_mae_graph[epoch]}")
             print(f"validation r2: {valid_r2_graph[epoch]}\n")
 
-    torch.save(model.state_dict(), WEIGHTS_PATH)
+    torch.save(model.state_dict(), f"{WEIGHTS_DIR}/iter_1_weights.pth")
 
     plot_results(
         train_loss_graph,
         valid_loss_graph,
-        "training loss",
-        "validation loss",
-        "epochs - loss",
         "loss",
-        "iter_1_loss",
+        f"{ASSETS_DIR}/iter_1_loss.png",
     )
     plot_results(
         train_mae_graph,
         valid_mae_graph,
-        "training mean absolute error",
-        "validation mean absolute error",
-        "epochs - mean absolute error",
-        "mean absoute error",
-        "iter_1_mae",
+        "mean absolute error",
+        f"{ASSETS_DIR}/iter_1_mae.png",
     )
     plot_results(
         train_r2_graph,
         valid_r2_graph,
-        "training r2 score",
-        "validation r2 score",
-        "epochs - r2 score",
         "r2 score",
-        "iter_1_r2",
+        f"{ASSETS_DIR}/iter_1_r2.png",
     )
 else:
-    model.load_state_dict(torch.load(WEIGHTS_PATH, weights_only=True))
+    model.load_state_dict(
+        torch.load(f"{WEIGHTS_DIR}/iter_1_weights.pth", weights_only=True)
+    )
     model.eval()
     with torch.no_grad():
         pred = model(X_test).squeeze(-1).numpy()

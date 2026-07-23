@@ -26,21 +26,18 @@ def plot_ce_via_hist(
 def plot_results(
     train_arr: NDArray[np.float64],
     valid_arr: NDArray[np.float64],
-    train_label: str,
-    valid_label: str,
-    title: str,
     metric: str,
-    file_name: str,
+    path: str,
 ) -> None:
     epochs = np.arange(1, len(train_arr) + 1)
-    plt.plot(epochs, train_arr, label=train_label)
-    plt.plot(epochs, valid_arr, label=valid_label, color="y")
+    plt.plot(epochs, train_arr, label=f"training {metric}")
+    plt.plot(epochs, valid_arr, label=f"validation {metric}", color="y")
 
-    plt.title(title)
+    plt.title(f"epochs - {metric}")
     plt.xlabel("epochs")
     plt.ylabel(metric)
 
     plt.legend()
     plt.grid(True)
-    plt.savefig(f"assets/{file_name}.png")
+    plt.savefig(path)
     plt.close("all")
