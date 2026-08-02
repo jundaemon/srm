@@ -116,13 +116,14 @@ if not TRAINED:
                 if valid_r2_graph[epoch] < valid_r2_graph[epoch - 1]:
                     patience += 1
                     print(f"patience: {patience}\n")
-                elif valid_r2_graph[epoch] - valid_r2_graph[epoch - 1] < 0.01:
+                elif valid_r2_graph[epoch] - valid_r2_graph[epoch - 1] < 0.005:
                     if valid_r2_graph[epoch] >= np.max(valid_r2_graph):
                         best_weights = model.state_dict()
                     patience += 1
                     print(f"patience: {patience}\n")
                 else:
-                    best_weights = model.state_dict()
+                    if valid_r2_graph[epoch] >= np.max(valid_r2_graph):
+                        best_weights = model.state_dict()
                     patience = 0
                     print(f"patience: {patience}\n")
             else:
