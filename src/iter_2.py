@@ -8,7 +8,7 @@ from utils.cache_utils import hit_cache
 from utils.data_utils import create_loaders
 from utils.plot_utils import plot_results
 
-TRAINED = False
+TRAINED = True
 WEIGHTS_DIR = "weights"
 ASSETS_DIR = "assets"
 
@@ -162,3 +162,4 @@ else:
         actual = y_test.numpy()
 
         print(f"test mae: {mean_absolute_error(actual, pred)}")
+        print(f"test r2: {r2_score(actual, pred)}")
