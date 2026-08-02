@@ -12,7 +12,7 @@ from utils.data_utils import create_loaders
 from utils.plot_utils import plot_results
 
 DATA_GENERATED = True
-TRAINED = False
+TRAINED = True
 WEIGHTS_DIR = "weights"
 ASSETS_DIR = "assets"
 
