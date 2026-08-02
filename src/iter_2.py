@@ -54,6 +54,9 @@ if not TRAINED:
     valid_mae_graph = np.zeros(epochs)
     valid_r2_graph = np.zeros(epochs)
 
+    patience = 0
+    best_weights = None
+
     for epoch in range(epochs):
         train_actual = []
         train_pred = []
@@ -109,7 +112,25 @@ if not TRAINED:
             print(f"validation mae: {valid_mae_graph[epoch]}")
             print(f"validation r2: {valid_r2_graph[epoch]}\n")
 
-    torch.save(model.state_dict(), f"{WEIGHTS_DIR}/iter_2_weights.pth")
+            if epoch > 0:
+                if valid_r2_graph[epoch] < valid_r2_graph[epoch - 1]:
+                    patience += 1
+                    print(f"patience: {patience}\n")
+                elif valid_r2_graph[epoch] - valid_r2_graph[epoch - 1] < 0.015:
+                    best_weights = model.state_dict()
+                    patience += 1
+                    print(f"patience: {patience}\n")
+                else:
+                    best_weights = model.state_dict()
+                    patience = 0
+                    print(f"patience: {patience}\n")
+            else:
+                best_weights = model.state_dict()
+
+            if patience == 5:
+                break
+
+    torch.save(best_weights, f"{WEIGHTS_DIR}/iter_2_weights.pth")
 
     plot_results(
         train_loss_graph,
