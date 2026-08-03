@@ -130,6 +130,9 @@ if not TRAINED:
             else:
                 best_weights = model.state_dict()
 
+            if patience == 5:
+                break
+
     torch.save(best_weights, f"{WEIGHTS_DIR}/iter_3_weights.pth")
 
     plot_results(
