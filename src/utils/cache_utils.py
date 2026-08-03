@@ -3,11 +3,9 @@ import sqlite3
 import numpy as np
 from numpy.typing import NDArray
 
-CACHE = "cache.db"
 
-
-def create_cache() -> None:
-    conn = sqlite3.connect(CACHE)
+def create_cache(name: str) -> None:
+    conn = sqlite3.connect(name)
     cursor = conn.cursor()
 
     cursor.execute("CREATE TABLE samples (input BLOB NOT NULL, label REAL NOT NULL);")
@@ -16,8 +14,8 @@ def create_cache() -> None:
     conn.close()
 
 
-def cache_samples(X: NDArray[np.float32], y: NDArray[np.float32]) -> None:
-    conn = sqlite3.connect(CACHE)
+def cache_samples(name: str, X: NDArray[np.float32], y: NDArray[np.float32]) -> None:
+    conn = sqlite3.connect(name)
     cursor = conn.cursor()
 
     values = []
@@ -30,8 +28,10 @@ def cache_samples(X: NDArray[np.float32], y: NDArray[np.float32]) -> None:
     conn.close()
 
 
-def hit_cache(rows: int, cols: int) -> tuple[NDArray[np.float32], NDArray[np.float32]]:
-    conn = sqlite3.connect(CACHE)
+def hit_cache(
+    name: str, rows: int, cols: int
+) -> tuple[NDArray[np.float32], NDArray[np.float32]]:
+    conn = sqlite3.connect(name)
     cursor = conn.cursor()
 
     inputs = np.empty((rows, cols), dtype=np.float32)

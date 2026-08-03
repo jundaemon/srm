@@ -8,11 +8,12 @@ from sklearn.metrics import mean_absolute_error, r2_score
 from simulations.hbt import (BINS, EFF_1S, input_gen, label_gen, seed_env,
                              seed_gen)
 from utils.cache_utils import cache_samples, create_cache, hit_cache
-from utils.data_utils import create_loaders
 from utils.plot_utils import plot_results
+from utils.train_utils import create_loaders
 
 DATA_GENERATED = True
 TRAINED = True
+CACHE = "cache.db"
 WEIGHTS_DIR = "weights"
 ASSETS_DIR = "assets"
 
@@ -21,14 +22,14 @@ SEEDS = seed_gen(121)
 TOTAL = len(EFF_1S) * len(SEEDS)
 
 if not DATA_GENERATED:
-    create_cache()
+    create_cache(CACHE)
 
     for seed in SEEDS:
         inputs = input_gen(seed).astype(np.float32)
         labels = label_gen(seed).astype(np.float32)
         print(f"{seed} {inputs.shape} {labels.shape}")
 
-        cache_samples(inputs, labels)
+        cache_samples(CACHE, inputs, labels)
 
 model = nn.Sequential()
 model.add_module("conv1d_1", nn.Conv1d(1, 64, 25, 1, 12))
@@ -49,7 +50,7 @@ model.add_module("relu_4", nn.ReLU())
 model.add_module("fc_4", nn.Linear(64, 1))
 model.add_module("softplus", nn.Softplus())
 
-inputs, labels = hit_cache(TOTAL, BINS)
+inputs, labels = hit_cache(CACHE, TOTAL, BINS)
 train_loader, valid_loader, X_test, y_test = create_loaders(inputs, labels)
 
 if not TRAINED:

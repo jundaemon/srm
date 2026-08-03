@@ -5,10 +5,11 @@ from sklearn.metrics import mean_absolute_error, r2_score
 
 from simulations.hbt import BINS, EFF_1S, seed_env, seed_gen
 from utils.cache_utils import hit_cache
-from utils.data_utils import create_loaders
 from utils.plot_utils import plot_results
+from utils.train_utils import create_loaders
 
 TRAINED = True
+CACHE = "cache.db"
 WEIGHTS_DIR = "weights"
 ASSETS_DIR = "assets"
 
@@ -36,7 +37,7 @@ model.add_module("fc_3", nn.Linear(256, 64))
 model.add_module("relu_6", nn.ReLU())
 model.add_module("fc_4", nn.Linear(64, 1))
 
-inputs, labels = hit_cache(TOTAL, BINS)
+inputs, labels = hit_cache(CACHE, TOTAL, BINS)
 train_loader, valid_loader, X_test, y_test = create_loaders(inputs, labels)
 
 if not TRAINED:
