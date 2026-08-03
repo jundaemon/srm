@@ -20,7 +20,7 @@ TOTAL = len(EFF_1S) * len(SEEDS)
 model = nn.Sequential()
 model.add_module("conv1d_1", nn.Conv1d(1, 64, 25, 1, 12))
 model.add_module("relu_1", nn.ReLU())
-model.add_module("maxpool_1", nn.MaxPool1d(30, 1))
+model.add_module("maxpool_1", nn.MaxPool1d(40, 1))
 model.add_module("conv1d_2", nn.Conv1d(64, 128, 25, 1, 12))
 model.add_module("relu_2", nn.ReLU())
 model.add_module("maxpool_2", nn.MaxPool1d(2, 2))
@@ -28,7 +28,7 @@ model.add_module("conv1d_3", nn.Conv1d(128, 256, 13, 1, 6))
 model.add_module("relu_3", nn.ReLU())
 model.add_module("maxpool_3", nn.MaxPool1d(2, 2))
 model.add_module("flatten", nn.Flatten())
-model.add_module("fc_1", nn.Linear(29_952, 4_096))
+model.add_module("fc_1", nn.Linear(29_440, 4_096))
 model.add_module("relu_4", nn.ReLU())
 model.add_module("dropout", nn.Dropout(0.5))
 model.add_module("fc_2", nn.Linear(4_096, 1_024))
@@ -112,6 +112,23 @@ if not TRAINED:
             print(f"validation loss: {valid_loss_graph[epoch]}")
             print(f"validation mae: {valid_mae_graph[epoch]}")
             print(f"validation r2: {valid_r2_graph[epoch]}\n")
+
+            if epoch > 0:
+                if valid_r2_graph[epoch] < valid_r2_graph[epoch - 1]:
+                    patience += 1
+                    print(f"patience: {patience}\n")
+                elif valid_r2_graph[epoch] - valid_r2_graph[epoch - 1] < 0.005:
+                    if valid_r2_graph[epoch] >= np.max(valid_r2_graph):
+                        best_weights = model.state_dict()
+                    patience += 1
+                    print(f"patience: {patience}\n")
+                else:
+                    if valid_r2_graph[epoch] >= np.max(valid_r2_graph):
+                        best_weights = model.state_dict()
+                    patience = 0
+                    print(f"patience: {patience}\n")
+            else:
+                best_weights = model.state_dict()
 
     torch.save(best_weights, f"{WEIGHTS_DIR}/iter_3_weights.pth")
 
