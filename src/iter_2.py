@@ -1,7 +1,7 @@
 import numpy as np
 import torch
 import torch.nn as nn
-from sklearn.metrics import mean_absolute_error, r2_score
+from sklearn.metrics import mean_absolute_error
 
 from simulations.hbt import BINS, EFF_1S, seed_env, seed_gen
 from utils.cache_utils import hit_cache
@@ -51,12 +51,7 @@ if not TRAINED:
     train_loss_graph = np.zeros(epochs)
     valid_loss_graph = np.zeros(epochs)
     train_mae_graph = np.zeros(epochs)
-    train_r2_graph = np.zeros(epochs)
     valid_mae_graph = np.zeros(epochs)
-    valid_r2_graph = np.zeros(epochs)
-
-    patience = 0
-    best_weights = None
 
     for epoch in range(epochs):
         train_actual = []
@@ -81,12 +76,10 @@ if not TRAINED:
         train_actual = np.concat(train_actual)
         train_pred = np.concat(train_pred)
         train_mae_graph[epoch] = mean_absolute_error(train_actual, train_pred)
-        train_r2_graph[epoch] = r2_score(train_actual, train_pred)
 
         print(epoch + 1)
         print(f"training loss: {train_loss_graph[epoch]}")
         print(f"training mae: {train_mae_graph[epoch]}")
-        print(f"training r2: {train_r2_graph[epoch]}")
 
         valid_actual = []
         valid_pred = []
@@ -107,33 +100,11 @@ if not TRAINED:
             valid_actual = np.concat(valid_actual)
             valid_pred = np.concat(valid_pred)
             valid_mae_graph[epoch] = mean_absolute_error(valid_actual, valid_pred)
-            valid_r2_graph[epoch] = r2_score(valid_actual, valid_pred)
 
             print(f"validation loss: {valid_loss_graph[epoch]}")
             print(f"validation mae: {valid_mae_graph[epoch]}")
-            print(f"validation r2: {valid_r2_graph[epoch]}\n")
 
-            if epoch > 0:
-                if valid_r2_graph[epoch] < valid_r2_graph[epoch - 1]:
-                    patience += 1
-                    print(f"patience: {patience}\n")
-                elif valid_r2_graph[epoch] - valid_r2_graph[epoch - 1] < 0.005:
-                    if valid_r2_graph[epoch] >= np.max(valid_r2_graph):
-                        best_weights = model.state_dict()
-                    patience += 1
-                    print(f"patience: {patience}\n")
-                else:
-                    if valid_r2_graph[epoch] >= np.max(valid_r2_graph):
-                        best_weights = model.state_dict()
-                    patience = 0
-                    print(f"patience: {patience}\n")
-            else:
-                best_weights = model.state_dict()
-
-            if patience == 5:
-                break
-
-    torch.save(best_weights, f"{WEIGHTS_DIR}/iter_2_weights.pth")
+    torch.save(model.state_dict(), f"{WEIGHTS_DIR}/iter_2_weights.pth")
 
     plot_results(
         train_loss_graph,
@@ -147,12 +118,6 @@ if not TRAINED:
         "mean absolute error",
         f"{ASSETS_DIR}/iter_2_mae.png",
     )
-    plot_results(
-        train_r2_graph,
-        valid_r2_graph,
-        "r2 score",
-        f"{ASSETS_DIR}/iter_2_r2.png",
-    )
 else:
     model.load_state_dict(
         torch.load(f"{WEIGHTS_DIR}/iter_2_weights.pth", weights_only=True)
@@ -163,4 +128,3 @@ else:
         actual = y_test.numpy()
 
         print(f"test mae: {mean_absolute_error(actual, pred)}")
-        print(f"test r2: {r2_score(actual, pred)}")
