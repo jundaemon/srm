@@ -138,14 +138,14 @@ HALF_INT_NS = 250
 BINS = 500
 
 
-@njit(float64[:](int64), parallel=True)
-def label_gen(seed: int) -> NDArray[np.float64]:
+@njit(float64[:](int64, int64), parallel=True)
+def label_gen(n: int, seed: int) -> NDArray[np.float64]:
     g2_zeros = np.empty(len(EFF_1S), dtype=np.float64)
     seed_env(seed)
 
     for i in prange(len(EFF_1S)):  # type: ignore
-        t_1 = f_1(LABELS_N, T_NS, EFF_1S[i], LIFETIME_NS)
-        t_2 = f_1(LABELS_N, T_NS, EFF_2S[i], LIFETIME_NS)
+        t_1 = f_1(n, T_NS, EFF_1S[i], LIFETIME_NS)
+        t_2 = f_1(n, T_NS, EFF_2S[i], LIFETIME_NS)
         t = f_2(t_1, t_2)
         t_1, t_2 = f_3(t)
         taus = f_4(t_1, t_2, HALF_INT_NS)
@@ -157,16 +157,17 @@ def label_gen(seed: int) -> NDArray[np.float64]:
 
 
 INPUT_N = 50
+INPUT_N_2 = 100
 
 
-@njit(int64[:, :](int64), parallel=True)
-def input_gen(seed: int) -> NDArray[np.int64]:
+@njit(int64[:, :](int64, int64), parallel=True)
+def input_gen(n: int, seed: int) -> NDArray[np.int64]:
     histograms = np.empty((len(EFF_1S), BINS), dtype=np.int64)
     seed_env(seed)
 
     for i in prange(len(EFF_1S)):  # type: ignore
-        t_1 = f_1(INPUT_N, T_NS, EFF_1S[i], LIFETIME_NS)
-        t_2 = f_1(INPUT_N, T_NS, EFF_2S[i], LIFETIME_NS)
+        t_1 = f_1(n, T_NS, EFF_1S[i], LIFETIME_NS)
+        t_2 = f_1(n, T_NS, EFF_2S[i], LIFETIME_NS)
         t = f_2(t_1, t_2)
         t_1, t_2 = f_3(t)
         taus = f_4(t_1, t_2, HALF_INT_NS)

@@ -137,7 +137,7 @@ def f_7(
 
     return hist[tau_zero_i - bpp // 2 : tau_zero_i + bpp // 2].sum() / areas.mean()
 ```
-This final function calculates the $g^{2}(0)$ using `hist`, the histogram of $\tau$, `bpp`, the number of bins per pulse, `peak_i` the indices of centre of side peaks and `tau_zero_i`, the index of $\tau$ = 0s. $g^{2}(0)$ is calculated by dividing the area of peak at $\tau$ = 0s by the average area of side peaks.
+This final function calculates the $g^{2}(0)$ using `hist`, the histogram of $\tau$, `bpp`, the number of bins per pulse, `peak_i`, the indices of centre of side peaks and `tau_zero_i`, the index of $\tau$ = 0s. $g^{2}(0)$ is calculated by dividing the area of peak at $\tau$ = 0s by the average area of side peaks.
 
 ### Putting everything together
 All helper functions were eventually used in `label_gen` and `input_gen`. `label_gen` generates 1_000_000 total arrival times, sorts, merges then splits the arrival times, calculates the $\tau$, bins the $\tau$ and calculates the $g^{2}(0)$. It does this repeatedly over 8_281 permutations of efficiency pairs in parallel for each seed over 121 seeds to obtain the labels. `input_gen` does the same thing but only generates 100 total arrival times for each efficiency pair and stops at `f_5` to get the sparse histogram as training input.

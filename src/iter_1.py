@@ -5,13 +5,13 @@ import torch
 import torch.nn as nn
 from sklearn.metrics import mean_absolute_error
 
-from simulations.hbt import (BINS, EFF_1S, input_gen, label_gen, seed_env,
-                             seed_gen)
+from simulations.hbt import (BINS, EFF_1S, EFF_2S, INPUT_N, LABELS_N,
+                             input_gen, label_gen, seed_env, seed_gen)
 from utils.cache_utils import cache_samples, create_cache, hit_cache
 from utils.plot_utils import plot_results
 from utils.train_utils import create_loaders
 
-DATA_GENERATED = True
+DATA_GENERATED = False
 TRAINED = True
 CACHE = "cache.db"
 WEIGHTS_DIR = "weights"
@@ -25,11 +25,13 @@ if not DATA_GENERATED:
     create_cache(CACHE)
 
     for seed in SEEDS:
-        inputs = input_gen(seed).astype(np.float32)
-        labels = label_gen(seed).astype(np.float32)
+        inputs = input_gen(INPUT_N, seed).astype(np.float32)
+        labels = label_gen(LABELS_N, seed).astype(np.float32)
         print(f"{seed} {inputs.shape} {labels.shape}")
 
-        cache_samples(CACHE, inputs, labels)
+        cache_samples(
+            CACHE, np.repeat(seed, len(EFF_1S)), EFF_1S, EFF_2S, inputs, labels
+        )
 
 model = nn.Sequential()
 model.add_module("conv1d_1", nn.Conv1d(1, 64, 25, 1, 12))

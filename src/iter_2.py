@@ -8,7 +8,7 @@ from utils.cache_utils import hit_cache
 from utils.plot_utils import plot_results
 from utils.train_utils import create_loaders
 
-TRAINED = True
+TRAINED = False
 CACHE = "cache.db"
 WEIGHTS_DIR = "weights"
 ASSETS_DIR = "assets"
