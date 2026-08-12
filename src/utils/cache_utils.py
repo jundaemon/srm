@@ -45,6 +45,30 @@ def cache_samples(
     conn.close()
 
 
+def mend_cache(
+    name: str,
+    seeds: NDArray[np.int64],
+    eff_1s: NDArray[np.float64],
+    eff_2s: NDArray[np.float64],
+    X: NDArray[np.float32],
+    y: NDArray[np.float32],
+) -> None:
+    conn = sqlite3.connect(name)
+    cursor = conn.cursor()
+
+    values = []
+    for seed, eff_1, eff_2, input, label in zip(seeds, eff_1s, eff_2s, X, y):
+        values.append((input.tobytes(), label, seed, eff_1, eff_2))
+
+    cursor.executemany(
+        "UPDATE samples SET input = ?, label = ? WHERE seed = ? AND eff_1 = ? AND eff_2 = ?",
+        values,
+    )
+    conn.commit()
+
+    conn.close()
+
+
 def hit_cache(
     name: str, rows: int, cols: int
 ) -> tuple[NDArray[np.float32], NDArray[np.float32]]:
