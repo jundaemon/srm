@@ -9,6 +9,7 @@ However, collecting a large number of detection events is time consuming. This p
 ## Synthetic data generation
 Code for data generation can be found in this [subdirectory](https://github.com/jundaemon/srm/blob/main/src/simulations/hbt.py).
 
+### f_1
 ```python
 @njit(float64[:](int64, float64, float64, float64))
 def f_1(n: int, T_ns: float, eff: float, lifetime_ns: float) -> NDArray[np.float64]:
@@ -28,6 +29,7 @@ When a nitrogen vacancy center is pulsed with a laser, a photon isn't guaranteed
 
 Photons are not immediately emitted when a center is pulsed with a laser, the time taken depends on `lifetime_ns`, the lifetime of an electron. The duration for each photon to be emitted is derived from the cumulative distribution function of the [exponential distribution](https://en.wikipedia.org/wiki/Exponential_distribution), then added to the time at which the center was pulsed with a laser to get the arrival time for each photon.
 
+### f_2
 ```python
 @njit(float64[:](float64[:], float64[:]))
 def f_2(t_1: NDArray[np.float64], t_2: NDArray[np.float64]) -> NDArray[np.float64]:
@@ -55,6 +57,7 @@ def f_2(t_1: NDArray[np.float64], t_2: NDArray[np.float64]) -> NDArray[np.float6
 ```
 The second function sorts and merges the 2 passed in arrays by ascending arrival times.
 
+### f_3
 ```python
 @njit(Tuple((float64[:], float64[:]))(float64[:]))
 def f_3(t: NDArray[np.float64]) -> tuple[NDArray[np.float64], NDArray[np.float64]]:
@@ -63,6 +66,7 @@ def f_3(t: NDArray[np.float64]) -> tuple[NDArray[np.float64], NDArray[np.float64
 ```
 The third function simulates a 50/50 beam splitter. After photons are emitted, they have to pass through a beam splitter in which they then end up at either detector.
 
+### f_4
 ```python
 @njit(float64[:](float64[:], float64[:], float64))
 def f_4(
@@ -99,6 +103,7 @@ def f_4(
 ```
 The fourth function calculates all $\tau$ between a detection event at the first detector and all other detection events at the second detector within a window, in a sliding window fashion. The first for loop is essentially doing what `np.searchsorted` does but it is more optimal as it doesn't reset the pointer on the last element it found and continues through the arrays in one direction. `t_1` represents the arrival times at detector 1, `t_2` represents the arrival times at detector 2 and `half_int_ns` represents half the interval (window) in nanoseconds.
 
+### f_5
 ```python
 @njit(Tuple((int64[:], float64))(float64[:], int64, float64))
 def f_5(
@@ -109,6 +114,7 @@ def f_5(
 ```
 The fifth function returns the histogram after binning $\tau$ as well as the number of bins per pulse, calculated using the period of each pulse, `T_ns`.
 
+### f_6
 ```python
 @njit(Tuple((int64[:], int64))(int64, float64))
 def f_6(bins: int, bpp: float) -> tuple[NDArray[np.int64], int]:
@@ -119,6 +125,7 @@ def f_6(bins: int, bpp: float) -> tuple[NDArray[np.int64], int]:
 ```
 The sixth function returns an array containing the indices of the centre of side peaks as well as the index of $\tau$ = 0s in the histogram. The first and last indices of the side peaks are omitted because they aren't fully formed for the `half_int_ns` that I am using. The index of $\tau$ = 0s is always at the centre of the histogram.
 
+### f_7
 ```python
 @njit(float64(int64[:], float64, int64[:], int64))
 def f_7(
