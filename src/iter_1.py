@@ -11,7 +11,7 @@ from utils.cache_utils import cache_samples, create_cache, hit_cache
 from utils.plot_utils import plot_results
 from utils.train_utils import create_loaders
 
-DATA_GENERATED = False
+DATA_GENERATED = True
 TRAINED = True
 CACHE = "cache.db"
 WEIGHTS_DIR = "weights"
