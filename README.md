@@ -142,7 +142,7 @@ This final function calculates the $g^{2}(0)$ using `hist`, the histogram of $\t
 ### Putting everything together
 All helper functions were eventually used in `label_gen` and `input_gen`. `label_gen` generates 1_000_000 total arrival times, sorts, merges then splits the arrival times, calculates the $\tau$, bins the $\tau$ and calculates the $g^{2}(0)$. It does this repeatedly over 8_281 permutations of efficiency pairs in parallel for each seed over 121 seeds to obtain the labels. `input_gen` does the same thing but only generates 100 total arrival times for each efficiency pair and stops at `f_5` to get the sparse histogram as training input.
 
-The training data will likely change depending on if it is too noisy to train on, if so, then the entropy of training data will be reduced by increasing `INPUT_N` in `input_gen`.
+The training data will likely change depending on if there aren't enough signals within histograms for the model to train on, if so, then the entropy of training data will be increased by increasing `INPUT_N` in `input_gen`.
 
 ## Training
 Model architectures and training loops can be found in the `src` directory, in files prefixed with `iter_`.

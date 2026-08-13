@@ -81,8 +81,7 @@ def f_4(
         while ptr_1 < len(t_2) and t_2[ptr_1] < t_1[i] - half_int_ns:
             ptr_1 += 1
 
-        if ptr_2 < ptr_1:
-            ptr_2 = ptr_1
+        ptr_2 = max(ptr_2, ptr_1)
 
         while ptr_2 < len(t_2) and t_2[ptr_2] < t_1[i] + half_int_ns:
             ptr_2 += 1
@@ -157,7 +156,7 @@ def label_gen(n: int, seed: int) -> NDArray[np.float64]:
 
 
 INPUT_N = 50
-INPUT_N_2 = 100
+INPUT_N_2 = 1_000
 
 
 @njit(int64[:, :](int64, int64), parallel=True)

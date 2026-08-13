@@ -1,12 +1,19 @@
-import os
-
 import numpy as np
 import torch
-import torch.nn as nn
 from sklearn.metrics import mean_absolute_error
+from torch import nn
 
-from simulations.hbt import (BINS, EFF_1S, EFF_2S, INPUT_N, LABELS_N,
-                             input_gen, label_gen, seed_env, seed_gen)
+from simulations.hbt import (
+    BINS,
+    EFF_1S,
+    EFF_2S,
+    INPUT_N,
+    LABELS_N,
+    input_gen,
+    label_gen,
+    seed_env,
+    seed_gen,
+)
 from utils.cache_utils import cache_samples, create_cache, hit_cache
 from utils.plot_utils import plot_results
 from utils.train_utils import create_loaders
