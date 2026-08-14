@@ -56,6 +56,7 @@ model.add_module("fc_4", nn.Linear(64, 1))
 inputs, labels = hit_cache(CACHE, TOTAL, BINS)
 train_loader, valid_loader, X_test, y_test = create_loaders(inputs, labels)
 
+
 if not TRAINED:
     device = torch.device("cuda")
     model.to(device)
@@ -68,6 +69,11 @@ if not TRAINED:
     valid_loss_graph = np.zeros(epochs)
     train_mae_graph = np.zeros(epochs)
     valid_mae_graph = np.zeros(epochs)
+
+    delta = 0.0001
+    patience = 0
+    best_validation_mae = 0
+    best_weights = model.state_dict()
 
     for epoch in range(epochs):
         train_actual = []
@@ -115,12 +121,30 @@ if not TRAINED:
             valid_loss_graph[epoch] /= len(valid_loader.dataset)  # type: ignore
             valid_actual = np.concat(valid_actual)
             valid_pred = np.concat(valid_pred)
-            valid_mae_graph[epoch] = mean_absolute_error(valid_actual, valid_pred)
+            valid_mae = mean_absolute_error(valid_actual, valid_pred)
+            valid_mae_graph[epoch] = valid_mae
 
             print(f"validation loss: {valid_loss_graph[epoch]}")
-            print(f"validation mae: {valid_mae_graph[epoch]}")
+            print(f"validation mae: {valid_mae}")
 
-    torch.save(model.state_dict(), f"{WEIGHTS_DIR}/iter_3_weights.pth")
+            if epoch == 0:
+                best_validation_mae = valid_mae
+            elif (
+                valid_mae < valid_mae_graph[epoch - 1]
+                or valid_mae - valid_mae_graph[epoch - 1] < delta
+            ):
+                patience += 1
+
+            print(f"patience: {patience}\n")
+
+            if valid_mae > best_validation_mae:
+                best_validation_mae = valid_mae
+                best_weights = model.state_dict()
+
+            if patience > 5:
+                break
+
+    torch.save(best_weights, f"{WEIGHTS_DIR}/iter_3_weights.pth")
 
     plot_results(
         train_loss_graph,

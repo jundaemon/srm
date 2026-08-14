@@ -156,7 +156,7 @@ def label_gen(n: int, seed: int) -> NDArray[np.float64]:
 
 
 INPUT_N = 50
-INPUT_N_2 = 1_000
+INPUT_N_2 = 2_000
 
 
 @njit(int64[:, :](int64, int64), parallel=True)

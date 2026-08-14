@@ -51,7 +51,7 @@ for eff_1, eff_2 in zip(EFF_1S, EFF_2S):
     i += 1
 
 plt.tight_layout()
-plt.show()
+plt.savefig("assets/iter_3_eda.png")
 
 
 BPP = T_NS
