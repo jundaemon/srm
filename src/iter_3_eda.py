@@ -7,8 +7,8 @@ from simulations.hbt import (
     BINS,
     HALF_INT_NS,
     INPUT_N,
-    LABELS_N,
     INPUT_N_2,
+    LABELS_N,
     LIFETIME_NS,
     T_NS,
     f_1,
@@ -17,7 +17,7 @@ from simulations.hbt import (
     f_4,
     input_gen,
     seed_env,
-    sparse_single_g2_gen
+    sparse_single_g2_gen,
 )
 
 # finding point when adding detection events don't contribute to changes in g^2(0)
@@ -68,6 +68,7 @@ BPHP = T_NS // 2
 PEAK_I = np.arange(BPP, BINS, BPP, dtype=np.int64)
 PEAK_I = PEAK_I[PEAK_I != BINS // 2]
 
+
 @njit(float64(int64[:]))
 def calculate_std_dev(histogram: NDArray[np.int64]) -> float:
     side_peak_areas = np.empty(len(PEAK_I), np.int64)
@@ -75,6 +76,7 @@ def calculate_std_dev(histogram: NDArray[np.int64]) -> float:
         side_peak_areas[i] = histogram[peak_i - BPHP : peak_i + BPHP].sum()
 
     return float(np.std(side_peak_areas))
+
 
 # the average standard deviation of side peak areas in histograms is calculated here
 # instead of the standard deviation of average side peak area in histograms because
@@ -87,6 +89,7 @@ def calculate_avg_std_dev(histograms: NDArray[np.int64]) -> float:
         std_devs[i] = calculate_std_dev(histograms[i])
 
     return std_devs.mean()
+
 
 old_histograms = input_gen(INPUT_N, SEED)
 new_histograms = input_gen(INPUT_N_2, SEED)

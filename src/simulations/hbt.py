@@ -175,6 +175,7 @@ def input_gen(n: int, seed: int) -> NDArray[np.int64]:
 
     return histograms
 
+
 @njit(float64(int64, int64))
 def sparse_single_g2_gen(n: int, seed: int) -> float:
     seed_env(seed)

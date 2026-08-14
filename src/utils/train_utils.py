@@ -20,18 +20,14 @@ def train_validation_test_split(
     NDArray[np.float32],
 ]:
     X_temp, X_test, y_temp, y_test = train_test_split(
-        X,
-        y,
-        test_size=int(len(X) * test_ratio),
-        shuffle=True,
-        random_state=1
+        X, y, test_size=int(len(X) * test_ratio), shuffle=True, random_state=1
     )
     X_train, X_valid, y_train, y_valid = train_test_split(
         X_temp,
         y_temp,
         test_size=int(len(X) * valid_ratio),
         shuffle=True,
-        random_state=1
+        random_state=1,
     )
 
     return X_train, X_valid, X_test, y_train, y_valid, y_test
