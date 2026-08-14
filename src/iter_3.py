@@ -21,6 +21,7 @@ DATA_MENDED = True
 CACHE = "cache.db"
 WEIGHTS_DIR = "weights"
 ASSETS_DIR = "assets"
+DELTA = 0.0005
 
 seed_env(10)
 SEEDS = seed_gen(121)
@@ -70,7 +71,6 @@ if not TRAINED:
     train_mae_graph = np.zeros(epochs)
     valid_mae_graph = np.zeros(epochs)
 
-    delta = 0.0005
     patience = 0
     best_validation_mae = 0
     best_weights = model.state_dict()
@@ -131,7 +131,7 @@ if not TRAINED:
                 best_validation_mae = valid_mae
             elif (
                 valid_mae_graph[epoch - 1] < valid_mae
-                or valid_mae_graph[epoch - 1] - valid_mae < delta
+                or valid_mae_graph[epoch - 1] - valid_mae < DELTA
             ):
                 patience += 1
             else:
