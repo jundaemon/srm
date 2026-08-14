@@ -156,7 +156,7 @@ def label_gen(n: int, seed: int) -> NDArray[np.float64]:
 
 
 INPUT_N = 50
-INPUT_N_2 = 2_000
+INPUT_N_2 = 3_000
 
 
 @njit(int64[:, :](int64, int64), parallel=True)
@@ -174,3 +174,15 @@ def input_gen(n: int, seed: int) -> NDArray[np.int64]:
         histograms[i,] = hist
 
     return histograms
+
+@njit(float64(int64, int64))
+def sparse_single_g2_gen(n: int, seed: int) -> float:
+    seed_env(seed)
+    set_1 = f_1(n, T_NS, 1, LIFETIME_NS)
+    set_2 = f_1(n, T_NS, 0.1, LIFETIME_NS)
+    set_t = f_2(set_1, set_2)
+    set_1, set_2 = f_3(set_t)
+    taus = f_4(set_1, set_2, HALF_INT_NS)
+    hist, bpp = f_5(taus, BINS, T_NS)
+    peak_i, tau_zero_i = f_6(BINS, bpp)
+    return f_7(hist, bpp, peak_i, tau_zero_i)

@@ -16,7 +16,7 @@ from utils.cache_utils import hit_cache, mend_cache
 from utils.plot_utils import plot_results
 from utils.train_utils import create_loaders
 
-TRAINED = False
+TRAINED = True
 DATA_MENDED = True
 CACHE = "cache.db"
 WEIGHTS_DIR = "weights"
@@ -70,7 +70,7 @@ if not TRAINED:
     train_mae_graph = np.zeros(epochs)
     valid_mae_graph = np.zeros(epochs)
 
-    delta = 0.0001
+    delta = 0.0005
     patience = 0
     best_validation_mae = 0
     best_weights = model.state_dict()
@@ -130,18 +130,20 @@ if not TRAINED:
             if epoch == 0:
                 best_validation_mae = valid_mae
             elif (
-                valid_mae < valid_mae_graph[epoch - 1]
-                or valid_mae - valid_mae_graph[epoch - 1] < delta
+                valid_mae_graph[epoch - 1] < valid_mae
+                or valid_mae_graph[epoch - 1] - valid_mae < delta
             ):
                 patience += 1
+            else:
+                patience = 0
 
             print(f"patience: {patience}\n")
 
-            if valid_mae > best_validation_mae:
+            if best_validation_mae > valid_mae:
                 best_validation_mae = valid_mae
                 best_weights = model.state_dict()
 
-            if patience > 5:
+            if patience >= 5:
                 break
 
     torch.save(best_weights, f"{WEIGHTS_DIR}/iter_3_weights.pth")

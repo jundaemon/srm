@@ -7,6 +7,7 @@ from simulations.hbt import (
     BINS,
     HALF_INT_NS,
     INPUT_N,
+    LABELS_N,
     INPUT_N_2,
     LIFETIME_NS,
     T_NS,
@@ -16,17 +17,24 @@ from simulations.hbt import (
     f_4,
     input_gen,
     seed_env,
+    sparse_single_g2_gen
 )
+
+# finding point when adding detection events don't contribute to changes in g^2(0)
+# new INPUT_N should not exceed or even come close to this number
+SEED = 10
+g2_zero = sparse_single_g2_gen(70_000, SEED)
+g2_zero_2 = sparse_single_g2_gen(LABELS_N, SEED)
+print(f"first g2 = {g2_zero}")
+print(f"second g2 = {g2_zero_2}\n")
 
 EFF_1S = np.repeat(0.1, 10)
 EFF_2S = np.linspace(0.1, 1.0, 10)
-
 fig, axes = plt.subplots(4, 5, figsize=(16, 10))
 
-SEED = 10
-seed_env(SEED)
 i = 0
 for eff_1, eff_2 in zip(EFF_1S, EFF_2S):
+    seed_env(SEED)
     set_1 = f_1(INPUT_N, T_NS, eff_1, LIFETIME_NS)
     set_2 = f_1(INPUT_N, T_NS, eff_2, LIFETIME_NS)
     set_t = f_2(set_1, set_2)
@@ -39,6 +47,7 @@ for eff_1, eff_2 in zip(EFF_1S, EFF_2S):
     i += 1
 
 for eff_1, eff_2 in zip(EFF_1S, EFF_2S):
+    seed_env(SEED)
     set_1 = f_1(INPUT_N_2, T_NS, eff_1, LIFETIME_NS)
     set_2 = f_1(INPUT_N_2, T_NS, eff_2, LIFETIME_NS)
     set_t = f_2(set_1, set_2)
@@ -59,7 +68,6 @@ BPHP = T_NS // 2
 PEAK_I = np.arange(BPP, BINS, BPP, dtype=np.int64)
 PEAK_I = PEAK_I[PEAK_I != BINS // 2]
 
-
 @njit(float64(int64[:]))
 def calculate_std_dev(histogram: NDArray[np.int64]) -> float:
     side_peak_areas = np.empty(len(PEAK_I), np.int64)
@@ -67,7 +75,6 @@ def calculate_std_dev(histogram: NDArray[np.int64]) -> float:
         side_peak_areas[i] = histogram[peak_i - BPHP : peak_i + BPHP].sum()
 
     return float(np.std(side_peak_areas))
-
 
 # the average standard deviation of side peak areas in histograms is calculated here
 # instead of the standard deviation of average side peak area in histograms because
@@ -81,10 +88,9 @@ def calculate_avg_std_dev(histograms: NDArray[np.int64]) -> float:
 
     return std_devs.mean()
 
-
 old_histograms = input_gen(INPUT_N, SEED)
 new_histograms = input_gen(INPUT_N_2, SEED)
 print(calculate_avg_std_dev(old_histograms))
 print(calculate_avg_std_dev(new_histograms))
-# average standard deviation of side peak area increased from ~3 to ~13
-# by increasing n from 50 to 1000
+# average standard deviation of side peak area increased from ~3 to ~22
+# by increasing n from 50 to 3000
