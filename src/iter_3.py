@@ -16,8 +16,8 @@ from utils.cache_utils import hit_cache, mend_cache
 from utils.plot_utils import plot_results
 from utils.train_utils import create_loaders
 
-TRAINED = True
-DATA_MENDED = False
+TRAINED = False
+DATA_MENDED = True
 CACHE = "cache.db"
 WEIGHTS_DIR = "weights"
 ASSETS_DIR = "assets"
@@ -120,23 +120,23 @@ if not TRAINED:
             print(f"validation loss: {valid_loss_graph[epoch]}")
             print(f"validation mae: {valid_mae_graph[epoch]}")
 
-    torch.save(model.state_dict(), f"{WEIGHTS_DIR}/iter_2_weights.pth")
+    torch.save(model.state_dict(), f"{WEIGHTS_DIR}/iter_3_weights.pth")
 
     plot_results(
         train_loss_graph,
         valid_loss_graph,
         "loss",
-        f"{ASSETS_DIR}/iter_2_loss.png",
+        f"{ASSETS_DIR}/iter_3_loss.png",
     )
     plot_results(
         train_mae_graph,
         valid_mae_graph,
         "mean absolute error",
-        f"{ASSETS_DIR}/iter_2_mae.png",
+        f"{ASSETS_DIR}/iter_3_mae.png",
     )
 else:
     model.load_state_dict(
-        torch.load(f"{WEIGHTS_DIR}/iter_2_weights.pth", weights_only=True)
+        torch.load(f"{WEIGHTS_DIR}/iter_3_weights.pth", weights_only=True)
     )
     model.eval()
     with torch.no_grad():
