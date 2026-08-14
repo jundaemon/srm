@@ -26,6 +26,7 @@ DELTA = 0.0005
 seed_env(10)
 SEEDS = seed_gen(121)
 TOTAL = len(EFF_1S) * len(SEEDS)
+EPOCHS = 30
 
 if not DATA_MENDED:
     for seed in SEEDS:
@@ -64,18 +65,17 @@ if not TRAINED:
 
     loss_fn = nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
-    epochs = 30
 
-    train_loss_graph = np.zeros(epochs)
-    valid_loss_graph = np.zeros(epochs)
-    train_mae_graph = np.zeros(epochs)
-    valid_mae_graph = np.zeros(epochs)
+    train_loss_graph = np.zeros(EPOCHS)
+    valid_loss_graph = np.zeros(EPOCHS)
+    train_mae_graph = np.zeros(EPOCHS)
+    valid_mae_graph = np.zeros(EPOCHS)
 
     patience = 0
     best_validation_mae = 0
     best_weights = model.state_dict()
 
-    for epoch in range(epochs):
+    for epoch in range(EPOCHS):
         train_actual = []
         train_pred = []
         model.train()

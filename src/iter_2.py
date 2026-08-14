@@ -16,6 +16,7 @@ ASSETS_DIR = "assets"
 seed_env(10)
 SEEDS = seed_gen(121)
 TOTAL = len(EFF_1S) * len(SEEDS)
+EPOCHS = 30
 
 model = nn.Sequential()
 model.add_module("conv1d_1", nn.Conv1d(1, 2, 25, 1, 12))
@@ -45,14 +46,13 @@ if not TRAINED:
 
     loss_fn = nn.MSELoss()
     optimizer = torch.optim.Adam(model.parameters(), lr=0.0001)
-    epochs = 30
 
-    train_loss_graph = np.zeros(epochs)
-    valid_loss_graph = np.zeros(epochs)
-    train_mae_graph = np.zeros(epochs)
-    valid_mae_graph = np.zeros(epochs)
+    train_loss_graph = np.zeros(EPOCHS)
+    valid_loss_graph = np.zeros(EPOCHS)
+    train_mae_graph = np.zeros(EPOCHS)
+    valid_mae_graph = np.zeros(EPOCHS)
 
-    for epoch in range(epochs):
+    for epoch in range(EPOCHS):
         train_actual = []
         train_pred = []
         model.train()
